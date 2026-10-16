@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=d633eab9-02eb-4d5a-bfa1-e1b058fae3cf
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Atendimentos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EEE3;
+    --paper-alt:#E9E2D0;
+    --card:#FBF9F3;
+    --ink:#23324A;
+    --ink-soft:#5B6B7F;
+    --ink-faint:#8A93A3;
+    --rule:#D2C9B2;
+    --accent:#B3452F;
+    --accent-dark:#8F3624;
+    --accent-tint:#F3E2DC;
+    --kraft:#AD8C56;
+    --denim:#4C6B8A;
+    --sage:#5E7F63;
+    --plum:#7A5C7E;
+    --neutral:#7A7A72;
+    --shadow:0 1px 2px rgba(35,50,74,0.10), 0 1px 0 rgba(35,50,74,0.04);
+    --radius:7px;
+    --font-serif:'Zilla Slab', Georgia, 'Iowan Old Style', serif;
+    --font-sans:'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-sans);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 35px,
+      var(--rule) 35px,
+      var(--rule) 36px
+    );
+    opacity:.35;
+    pointer-events:none;
+    z-index:0;
+  }
+  #app{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 0 64px;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select,textarea{font-family:inherit;font-size:15px;}
+  a{color:inherit;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:22px 20px 16px;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+  .brand h1{
+    font-family:var(--font-serif);
+    font-weight:700;
+    font-size:24px;
+    margin:0;
+    letter-spacing:.2px;
+    border-bottom:3px solid var(--accent);
+    padding-bottom:2px;
+  }
+  .brand .sub{font-size:13px;color:var(--ink-soft);}
+  .btn{
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--paper);
+    padding:10px 16px;
+    border-radius:var(--radius);
+    font-size:14px;
+    font-weight:600;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:transform .08s ease, background .15s ease;
+  }
+  .btn:hover{background:#1a2536;}
+  .btn:active{transform:translateY(1px);}
+  .btn-accent{background:var(--accent);border-color:var(--accent);}
+  .btn-accent:hover{background:var(--accent-dark);}
+  .btn-ghost{
+    background:transparent;color:var(--ink);border:1px solid var(--rule);
+    font-weight:500;
+  }
+  .btn-ghost:hover{border-color:var(--ink-soft);}
+  .btn-danger{background:transparent;color:var(--accent-dark);border:1px solid var(--accent-dark);font-weight:500;}
+  .btn-danger:hover{background:var(--accent-tint);}
+  .btn-sm{padding:6px 11px;font-size:13px;}
+  .btn:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--denim);outline-offset:2px;
+  }
+
+  /* ---------- Stats strip ---------- */
+  .stats{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:1px;background:var(--rule);
+    border:1px solid var(--rule);border-radius:var(--radius);
+    margin:0 20px 18px;overflow:hidden;
+  }
+  .stat{background:var(--card);padding:12px 14px;}
+  .stat .n{font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--ink);}
+  .stat .l{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+
+  /* ---------- Search ---------- */
+  .searchbar{margin:0 20px 16px;position:relative;}
+  .searchbar input{
+    width:100%;padding:11px 14px;border:1px solid var(--rule);
+    border-radius:var(--radius);background:var(--card);color:var(--ink);
+  }
+  .searchbar input::placeholder{color:var(--ink-faint);}
+
+  /* ---------- Lista de alunos ---------- */
+  .list{margin:0 20px;display:flex;flex-direction:column;gap:10px;}
+  .student-card{
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-top-left-radius:12px;border-top-right-radius:12px;
+    border-bottom-left-radius:4px;border-bottom-right-radius:4px;
+    box-shadow:var(--shadow);
+    padding:14px 16px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    text-align:left;width:100%;border-width:1px;
+  }
+  .student-card:hover{border-color:var(--ink-soft);}
+  .student-main .nome{font-family:var(--font-serif);font-weight:600;font-size:17px;}
+  .student-main .meta{font-size:13px;color:var(--ink-soft);margin-top:3px;}
+  .student-count{
+    display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;
+  }
+  .student-count .num{font-family:var(--font-serif);font-weight:700;font-size:19px;color:var(--accent-dark);}
+  .student-count .lbl{font-size:11px;color:var(--ink-soft);}
+
+  .empty{
+    margin:40px 20px;padding:32px 24px;text-align:center;
+    background:var(--card);border:1px dashed var(--rule);border-radius:var(--radius);
+  }
+  .empty h2{font-family:var(--font-serif);font-size:19px;margin:0 0 6px;}
+  .empty p{color:var(--ink-soft);font-size:14px;margin:0 0 18px;max-width:38ch;margin-left:auto;margin-right:auto;}
+
+  /* ---------- Detalhe do aluno ---------- */
+  .detail-header{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+    padding:18px 20px 14px;flex-wrap:wrap;
+  }
+  .back{
+    display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);
+    background:none;border:none;font-size:14px;padding:0 0 12px;
+  }
+  .back:hover{color:var(--ink);}
+  .detail-title h2{font-family:var(--font-serif);font-size:23px;margin:0;}
+  .detail-title .meta{font-size:13px;color:var(--ink-soft);margin-top:4px;}
+  .detail-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+  .timeline{margin:6px 20px 0;display:flex;flex-direction:column;gap:12px;}
+  .record{
+    background:var(--card);border:1px solid var(--rule);border-radius:var(--radius);
+    padding:14px 16px 14px 16px;position:relative;padding-left:20px;box-shadow:var(--shadow);
+  }
+  .record::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:5px;
+    border-top-left-radius:var(--radius);border-bottom-left-radius:var(--radius);
+    background:var(--tag-color, var(--neutral));
+  }
+  .record-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .tag{
+    font-size:12px;font-weight:600;color:#fff;background:var(--tag-color,var(--neutral));
+    padding:3px 9px;border-radius:100px;display:inline-block;
+  }
+  .record-date{font-size:13px;color:var(--ink-soft);font-family:var(--font-serif);font-weight:600;}
+  .record-prof{font-size:12.5px;color:var(--ink-faint);margin-top:6px;}
+  .record-body{font-size:14.5px;line-height:1.5;margin-top:8px;white-space:pre-wrap;}
+  .record-follow{
+    margin-top:10px;padding-top:10px;border-top:1px dashed var(--rule);
+    font-size:13.5px;color:var(--ink-soft);
+  }
+  .record-follow b{color:var(--ink);font-weight:600;}
+  .record-actions{display:flex;gap:14px;margin-top:10px;}
+  .link-btn{background:none;border:none;padding:0;font-size:13px;color:var(--denim);font-weight:500;}
+  .link-btn.danger{color:var(--accent-dark);}
+  .link-btn:hover{text-decoration:underline;}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(23,29,38,.45);
+    display:flex;align-items:flex-end;justify-content:center;z-index:50;
+    padding:0;
+  }
+  .modal{
+    background:var(--paper);width:100%;max-width:560px;
+    border-top-left-radius:16px;border-top-right-radius:16px;
+    max-height:92vh;overflow-y:auto;
+    box-shadow:0 -6px 24px rgba(0,0,0,.2);
+    padding:20px 20px 28px;
+  }
+  @media(min-width:720px){
+    .overlay{align-items:center;}
+    .modal{border-radius:12px;max-height:88vh;}
+  }
+  .modal h3{font-family:var(--font-serif);font-size:19px;margin:0 0 16px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:5px;}
+  .field .hint{font-size:12px;color:var(--ink-faint);margin-top:4px;}
+  .field input,.field select,.field textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;
+    background:var(--card);color:var(--ink);
+  }
+  .field textarea{min-height:90px;resize:vertical;line-height:1.45;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:420px){.row2{grid-template-columns:1fr;}}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:8px;}
+
+  /* ---------- Rodapé / config ---------- */
+  .footer{
+    margin:36px 20px 0;padding-top:16px;border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  }
+  .footer .status{font-size:12px;color:var(--ink-faint);}
+
+  /* ---------- Layout largo ---------- */
+  @media(min-width:860px){
+    .topbar{padding:28px 32px 18px;}
+    .stats,.searchbar,.list,.empty,.footer{margin-left:32px;margin-right:32px;}
+    .detail-header,.timeline{padding-left:32px;padding-right:32px;margin-left:0;margin-right:0;}
+    .timeline{padding-left:32px;padding-right:32px;margin-left:0;margin-right:0;}
+  }
+
+  /* ---------- Impressão ---------- */
+  @media print{
+    body::before{display:none;}
+    .topbar,.stats,.searchbar,.back,.detail-actions,.record-actions,.footer,.empty .btn{display:none !important;}
+    body{background:#fff;}
+    .record{box-shadow:none;border:1px solid #999;break-inside:avoid;}
+    #app{max-width:100%;}
+  }
+
+  .loading{padding:60px 20px;text-align:center;color:var(--ink-soft);font-size:14px;}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Carregando registros…</div></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // Provide a local fallback for window.storage to make it self-contained
+  if (!window.storage) {
+    window.storage = {
+      get: async function(key) {
+        var val = localStorage.getItem(key);
+        return val ? { value: val } : null;
+      },
+      set: async function(key, value) {
+        localStorage.setItem(key, value);
+      }
+    };
+  }
+
+  var STORAGE_KEY = "escola_atendimentos_v1";
+
+  var TIPOS = {
+    pedagogico:      { label:"Pedagógico",              color:"var(--denim)"  },
+    comportamental:  { label:"Comportamental",          color:"var(--accent)" },
+    saude:           { label:"Saúde e bem-estar",       color:"var(--sage)"   },
+    familia:         { label:"Família e responsáveis",  color:"var(--kraft)"  },
+    encaminhamento:  { label:"Encaminhamento externo",  color:"var(--plum)"   },
+    outro:           { label:"Outro",                   color:"var(--neutral)"}
+  };
+
+  var state = {
+    data: null,
+    loaded: false,
+    view: "lista",        // 'lista' | 'detalhe'
+    selectedId: null,
+    search: "",
+    modal: null,           // 'aluno' | 'atendimento' | 'confirm'
+    confirmData: null,
+    editingStudentId: null,
+    editingRecordId: null
+  };
+
+  function uid(){
+    return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
+  }
+
+  function defaultData(){
+    return { students: [], records: [] };
+  }
+
+  function escapeHtml(str){
+    return String(str == null ? "" : str)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function formatDateBR(iso){
+    if(!iso) return "";
+    var p = iso.split("-");
+    if(p.length!==3) return iso;
+    return p[2] + "/" + p[1] + "/" + p[0];
+  }
+
+  function todayIso(){
+    var d = new Date();
+    var m = String(d.getMonth()+1).padStart(2,"0");
+    var day = String(d.getDate()).padStart(2,"0");
+    return d.getFullYear() + "-" + m + "-" + day;
+  }
+
+  async function loadData(){
+    try{
+      var res = await window.storage.get(STORAGE_KEY, false);
+      state.data = (res && res.value) ? JSON.parse(res.value) : defaultData();
+    }catch(e){
+      state.data = defaultData();
+    }
+    state.loaded = true;
+    render();
+  }
+
+  var saveTimer = null;
+  function saveData(){
+    clearTimeout(saveTimer);
+    setStatus("Salvando…");
+    saveTimer = setTimeout(async function(){
+      try{
+        await window.storage.set(STORAGE_KEY, JSON.stringify(state.data), false);
+        setStatus("Tudo salvo");
+      }catch(e){
+        setStatus("Não foi possível salvar agora");
+      }
+    }, 200);
+  }
+
+  function setStatus(text){
+    var el = document.getElementById("saveStatus");
+    if(el) el.textContent = text;
+  }
+
+  function getStudents(){ return state.data.students; }
+  function getStudent(id){ return state.data.students.find(function(s){return s.id===id;}); }
+  function getRecordsFor(studentId){
+    return state.data.records
+      .filter(function(r){return r.studentId===studentId;})
+      .sort(function(a,b){ return b.data.localeCompare(a.data); });
+  }
+  function countFor(studentId){
+    return state.data.records.filter(function(r){return r.studentId===studentId;}).length;
+  }
+  function lastRecordDate(studentId){
+    var recs = getRecordsFor(studentId);
+    return recs.length ? recs[0].data : null;
+  }
+
+  function addStudent(obj){
+    obj.id = uid(); obj.criadoEm = todayIso();
+    state.data.students.push(obj); saveData();
+    return obj.id;
+  }
+  function updateStudent(id, patch){
+    var s = getStudent(id); if(!s) return;
+    Object.assign(s, patch); saveData();
+  }
+  function deleteStudent(id){
+    state.data.students = state.data.students.filter(function(s){return s.id!==id;});
+    state.data.records = state.data.records.filter(function(r){return r.studentId!==id;});
+    saveData();
+  }
+  function addRecord(obj){
+    obj.id = uid(); obj.criadoEm = todayIso();
+    state.data.records.push(obj); saveData();
+    return obj.id;
+  }
+  function updateRecord(id, patch){
+    var r = state.data.records.find(function(r){return r.id===id;}); if(!r) return;
+    Object.assign(r, patch); saveData();
+  }
+  function deleteRecord(id){
+    state.data.records = state.data.records.filter(function(r){return r.id!==id;});
+    saveData();
+  }
+
+  function last30DaysCount(){
+    var d = new Date(); d.setDate(d.getDate()-30);
+    var cutoff = d.toISOString().slice(0,10);
+    return state.data.records.filter(function(r){return r.data >= cutoff;}).length;
+  }
+
+  function render(){
+    var app = document.getElementById("app");
+    if(!state.loaded){ app.innerHTML = '<div class="loading">Carregando registros…</div>'; return; }
+
+    var html = "";
+    html += renderTopbar();
+    if(state.view === "lista"){
+      html += renderStats();
+      html += renderSearch();
+      html += renderList();
+    } else {
+      html += renderDetail();
+    }
+    html += renderFooter();
+    app.innerHTML = html;
+
+    attachGlobalHandlers();
+
+    if(state.modal){
+      renderModal();
+    }
+  }
+
+  function renderTopbar(){
+    return (
+      '<div class="topbar">' +
+        '<div class="brand"><h1>Registro de Atendimentos</h1><span class="sub">um histórico por aluno</span></div>' +
+        (state.view==="lista"
+          ? '<button class="btn btn-accent" data-action="novo-aluno">+ Novo aluno</button>'
+          : '') +
+      '</div>'
+    );
+  }
+
+  function renderStats(){
+    var total = getStudents().length;
+    var totalAt = state.data.records.length;
+    var recentes = last30DaysCount();
+    return (
+      '<div class="stats">' +
+        '<div class="stat"><div class="n">'+total+'</div><div class="l">alunos cadastrados</div></div>' +
+        '<div class="stat"><div class="n">'+totalAt+'</div><div class="l">atendimentos no total</div></div>' +
+        '<div class="stat"><div class="n">'+recentes+'</div><div class="l">nos últimos 30 dias</div></div>' +
+      '</div>'
+    );
+  }
+
+  function renderSearch(){
+    return (
+      '<div class="searchbar">' +
+        '<input type="text" id="searchInput" placeholder="Buscar aluno pelo nome ou turma…" value="'+escapeHtml(state.search)+'">' +
+      '</div>'
+    );
+  }
+
+  function renderList(){
+    var students = getStudents().slice().sort(function(a,b){
+      return a.nome.localeCompare(b.nome, "pt-BR");
+    });
+    var q = state.search.trim().toLowerCase();
+    if(q){
+      students = students.filter(function(s){
+        return (s.nome+" "+(s.turma||"")).toLowerCase().indexOf(q) !== -1;
+      });
+    }
+
+    if(getStudents().length === 0){
+      return (
+        '<div class="empty">' +
+          '<h2>Nenhum aluno cadastrado ainda</h2>' +
+          '<p>Adicione o primeiro aluno para começar a registrar os atendimentos individuais.</p>' +
+          '<button class="btn btn-accent" data-action="novo-aluno">+ Novo aluno</button>' +
+        '</div>'
+      );
+    }
+
+    if(students.length === 0){
+      return '<div class="empty"><h2>Nenhum resultado</h2><p>Nenhum aluno corresponde a essa busca.</p></div>';
+    }
+
+    var rows = students.map(function(s){
+      var n = countFor(s.id);
+      var last = lastRecordDate(s.id);
+      return (
+        '<button class="student-card" data-action="abrir-aluno" data-id="'+s.id+'">' +
+          '<div class="student-main">' +
+            '<div class="nome">'+escapeHtml(s.nome)+'</div>' +
+            '<div class="meta">'+escapeHtml(s.turma||"Turma não informada")+(last?(' · último atendimento em '+formatDateBR(last)):'')+'</div>' +
+          '</div>' +
+          '<div class="student-count"><div class="num">'+n+'</div><div class="lbl">'+(n===1?'atendimento':'atendimentos')+'</div></div>' +
+        '</button>'
+      );
+    }).join("");
+
+    return '<div class="list">'+rows+'</div>';
+  }
+
+  function renderDetail(){
+    var s = getStudent(state.selectedId);
+    if(!s){
+      state.view = "lista";
+      return renderStats() + renderSearch() + renderList();
+    }
+    var recs = getRecordsFor(s.id);
+
+    var recordsHtml = recs.length ? recs.map(renderRecordCard).join("") :
+      '<div class="empty"><h2>Nenhum atendimento registrado</h2><p>Registre o primeiro atendimento deste aluno para começar o histórico.</p>' +
+      '<button class="btn btn-accent" data-action="novo-atendimento" data-id="'+s.id+'">+ Novo atendimento</button></div>';
+
+    return (
+      '<div class="detail-header">' +
+        '<div>' +
+          '<button class="back" data-action="voltar">‹ Todos os alunos</button>' +
+          '<div class="detail-title"><h2>'+escapeHtml(s.nome)+'</h2>' +
+          '<div class="meta">'+escapeHtml(s.turma||"Turma não informada") +
+            (s.responsavel ? ' · responsável: '+escapeHtml(s.responsavel) : '') +
+            (s.contato ? ' · '+escapeHtml(s.contato) : '') +
+          '</div></div>' +
+        '</div>' +
+        '<div class="detail-actions">' +
+          '<button class="btn btn-ghost btn-sm" data-action="imprimir">Imprimir</button>' +
+          '<button class="btn btn-ghost btn-sm" data-action="editar-aluno" data-id="'+s.id+'">Editar aluno</button>' +
+          '<button class="btn btn-danger btn-sm" data-action="excluir-aluno" data-id="'+s.id+'">Excluir aluno</button>' +
+          '<button class="btn btn-accent btn-sm" data-action="novo-atendimento" data-id="'+s.id+'">+ Novo atendimento</button>' +
+        '</div>' +
+      '</div>' +
+      (s.observacoes ? '<div style="margin:0 20px 4px;font-size:13.5px;color:var(--ink-soft);"><b style="color:var(--ink);">Observações gerais:</b> '+escapeHtml(s.observacoes)+'</div>' : '') +
+      '<div class="timeline">'+recordsHtml+'</div>'
+    );
+  }
+
+  function renderRecordCard(r){
+    var tipo = TIPOS[r.tipo] || TIPOS.outro;
+    return (
+      '<div class="record" style="--tag-color:'+tipo.color+'">' +
+        '<div class="record-head">' +
+          '<span class="tag">'+tipo.label+'</span>' +
+          '<span class="record-date">'+formatDateBR(r.data)+'</span>' +
+        '</div>' +
+        (r.profissional ? '<div class="record-prof">Atendido por '+escapeHtml(r.profissional)+'</div>' : '') +
+        '<div class="record-body">'+escapeHtml(r.descricao)+'</div>' +
+        (r.encaminhamento ? '<div class="record-follow"><b>Encaminhamentos: </b>'+escapeHtml(r.encaminhamento)+'</div>' : '') +
+        '<div class="record-actions">' +
+          '<button class="link-btn" data-action="editar-atendimento" data-id="'+r.id+'">Editar</button>' +
+          '<button class="link-btn danger" data-action="excluir-atendimento" data-id="'+r.id+'">Excluir</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderFooter(){
+    return '<div class="footer"><span class="status" id="saveStatus"></span></div>';
+  }
+
+  function renderModal(){
+    var app = document.getElementById("app");
+    var modalHtml = '<div class="overlay" id="modalOverlay"><div class="modal">';
+    
+    if(state.modal === 'aluno'){
+       var isEdit = !!state.editingStudentId;
+       var s = isEdit ? getStudent(state.editingStudentId) : {nome:'', turma:'', responsavel:'', contato:'', observacoes:''};
+       modalHtml += '<h3>' + (isEdit ? 'Editar aluno' : 'Novo aluno') + '</h3>' +
+       '<form id="formModal">' +
+         '<div class="field"><label>Nome do aluno *</label><input type="text" id="m_nome" value="'+escapeHtml(s.nome)+'" required></div>' +
+         '<div class="row2">' +
+           '<div class="field"><label>Turma / Ano</label><input type="text" id="m_turma" value="'+escapeHtml(s.turma)+'"></div>' +
+           '<div class="field"><label>Contato</label><input type="text" id="m_contato" value="'+escapeHtml(s.contato)+'"></div>' +
+         '</div>' +
+         '<div class="field"><label>Nome do responsável</label><input type="text" id="m_responsavel" value="'+escapeHtml(s.responsavel)+'"></div>' +
+         '<div class="field"><label>Observações gerais</label><textarea id="m_observacoes">'+escapeHtml(s.observacoes)+'</textarea></div>' +
+         '<div class="modal-actions">' +
+           '<button type="button" class="btn btn-ghost" data-action="fechar-modal">Cancelar</button>' +
+           '<button type="submit" class="btn btn-accent">Salvar</button>' +
+         '</div>' +
+       '</form>';
+    } else if (state.modal === 'atendimento') {
+       var isEdit = !!state.editingRecordId;
+       var r = isEdit ? state.data.records.find(function(x){return x.id===state.editingRecordId}) : {data:todayIso(), tipo:'pedagogico', profissional:'', descricao:'', encaminhamento:''};
+       var options = Object.keys(TIPOS).map(function(k){
+          var sel = r.tipo === k ? ' selected' : '';
+          return '<option value="'+k+'"'+sel+'>'+TIPOS[k].label+'</option>';
+       }).join('');
+
+       modalHtml += '<h3>' + (isEdit ? 'Editar atendimento' : 'Novo atendimento') + '</h3>' +
+       '<form id="formModal">' +
+         '<div class="row2">' +
+           '<div class="field"><label>Data *</label><input type="date" id="m_data" value="'+escapeHtml(r.data)+'" required></div>' +
+           '<div class="field"><label>Tipo de atendimento</label><select id="m_tipo">'+options+'</select></div>' +
+         '</div>' +
+         '<div class="field"><label>Profissional responsável</label><input type="text" id="m_profissional" value="'+escapeHtml(r.profissional)+'"></div>' +
+         '<div class="field"><label>Descrição do caso *</label><textarea id="m_descricao" required>'+escapeHtml(r.descricao)+'</textarea></div>' +
+         '<div class="field"><label>Encaminhamentos / Conclusão</label><textarea style="min-height:50px;" id="m_encaminhamento">'+escapeHtml(r.encaminhamento)+'</textarea></div>' +
+         '<div class="modal-actions">' +
+           '<button type="button" class="btn btn-ghost" data-action="fechar-modal">Cancelar</button>' +
+           '<button type="submit" class="btn btn-accent">Salvar</button>' +
+         '</div>' +
+       '</form>';
+    } else if (state.modal === 'confirm') {
+       modalHtml += '<h3>' + escapeHtml(state.confirmData.title) + '</h3>' +
+       '<p style="font-size:14px; margin-bottom: 20px;">' + escapeHtml(state.confirmData.message) + '</p>' +
+       '<div class="modal-actions">' +
+         '<button type="button" class="btn btn-ghost" data-action="fechar-modal">Cancelar</button>' +
+         '<button type="button" class="btn btn-danger" id="btnConfirmAction">' + escapeHtml(state.confirmData.btnText || 'Confirmar') + '</button>' +
+       '</div>';
+    }
+    
+    modalHtml += '</div></div>';
+    app.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Initial focus on inputs
+    setTimeout(function(){
+      var overlay = document.getElementById('modalOverlay');
+      if (overlay) {
+        var firstInput = overlay.querySelector('input, textarea, select');
+        if(firstInput) firstInput.focus();
+      }
+    }, 50);
+
+    // Form logic bindings
+    var formModal = document.getElementById('formModal');
+    if(formModal) {
+      formModal.onsubmit = function(e){
+        e.preventDefault();
+        
+        if (state.modal === 'aluno') {
+          var patchStudent = {
+            nome: document.getElementById('m_nome').value.trim(),
+            turma: document.getElementById('m_turma').value.trim(),
+            contato: document.getElementById('m_contato').value.trim(),
+            responsavel: document.getElementById('m_responsavel').value.trim(),
+            observacoes: document.getElementById('m_observacoes').value.trim()
+          };
+          if(!patchStudent.nome) return;
+          if(state.editingStudentId){
+             updateStudent(state.editingStudentId, patchStudent);
+          } else {
+             var newId = addStudent(patchStudent);
+             state.view = 'detalhe';
+             state.selectedId = newId;
+          }
+        } else if (state.modal === 'atendimento') {
+          var patchRecord = {
+            studentId: state.selectedId,
+            data: document.getElementById('m_data').value,
+            tipo: document.getElementById('m_tipo').value,
+            profissional: document.getElementById('m_profissional').value.trim(),
+            descricao: document.getElementById('m_descricao').value.trim(),
+            encaminhamento: document.getElementById('m_encaminhamento').value.trim()
+          };
+          if(!patchRecord.data || !patchRecord.descricao) return;
+          if(state.editingRecordId){
+             updateRecord(state.editingRecordId, patchRecord);
+          } else {
+             addRecord(patchRecord);
+          }
+        }
+
+        closeModal();
+        render();
+      };
+    }
+
+    var btnConfirm = document.getElementById('btnConfirmAction');
+    if (btnConfirm) {
+      btnConfirm.onclick = function() {
+        if (state.confirmData && state.confirmData.action) {
+           state.confirmData.action();
+        }
+        closeModal();
+        render();
+      };
+    }
+  }
+
+  function closeModal(){
+    state.modal = null;
+    state.editingStudentId = null;
+    state.editingRecordId = null;
+    state.confirmData = null;
+  }
+
+  function customConfirm(title, message, btnText, callback) {
+    state.modal = 'confirm';
+    state.confirmData = { title: title, message: message, btnText: btnText, action: callback };
+    render();
+  }
+
+  function attachGlobalHandlers(){
+    var app = document.getElementById("app");
+    
+    // Dynamic search filtering without losing input focus
+    var searchInput = document.getElementById("searchInput");
+    if(searchInput) {
+      searchInput.addEventListener('input', function(e){
+        state.search = e.target.value;
+        var container = app.querySelector('.list') || app.querySelector('.empty');
+        if (container) {
+            container.outerHTML = renderList();
+        }
+      });
+    }
+
+    // Global Click Delegation
+    app.onclick = function(e){
+      var btn = e.target.closest('[data-action]');
+      if(!btn) return;
+      var action = btn.getAttribute('data-action');
+      var id = btn.getAttribute('data-id');
+
+      if(action === 'novo-aluno'){
+         state.modal = 'aluno'; render();
+      } else if (action === 'abrir-aluno'){
+         state.view = 'detalhe'; state.selectedId = id; render();
+      } else if (action === 'voltar'){
+         state.view = 'lista'; state.search = ''; render();
+      } else if (action === 'editar-aluno'){
+         state.modal = 'aluno'; state.editingStudentId = id; render();
+      } else if (action === 'excluir-aluno'){
+         customConfirm(
+           'Excluir aluno',
+           'Tem certeza que deseja excluir este aluno e todos os seus atendimentos? Esta ação não pode ser desfeita.',
+           'Excluir',
+           function() { deleteStudent(id); state.view = 'lista'; }
+         );
+      } else if (action === 'novo-atendimento'){
+         state.modal = 'atendimento'; render();
+      } else if (action === 'editar-atendimento'){
+         state.modal = 'atendimento'; state.editingRecordId = id; render();
+      } else if (action === 'excluir-atendimento'){
+         customConfirm(
+           'Excluir atendimento',
+           'Tem certeza que deseja excluir este registro de atendimento?',
+           'Excluir',
+           function() { deleteRecord(id); }
+         );
+      } else if (action === 'fechar-modal'){
+         closeModal(); render();
+      } else if (action === 'imprimir'){
+         window.print();
+      }
+    };
+  }
+
+  // Bootstrap application
+  loadData();
+
+})();
+</script>
+</body>
+</html><script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="d633eab9-02eb-4d5a-bfa1-e1b058fae3cf" data-app-host="app.netlify.com" data-account-tier="free"></script>
